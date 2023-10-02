@@ -1,0 +1,16 @@
+{
+  "name": "remote-assignments",
+  "version": "1.0.0",
+  "description": "",
+  "main": "requestAsync.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "lcy-lin",
+  "license": "ISC",
+  "dependencies": {
+    "async-request": "^1.2.0",
+    "axios": "^1.5.1"
+  }
+}
