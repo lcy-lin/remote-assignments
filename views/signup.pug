@@ -1,0 +1,16 @@
+doctype html
+html(lang=en)
+    head
+        title User Sign UP
+    body
+        form(action='/users', method='POST')
+            label Please enter your email: 
+                input(type='text', name='useremail')
+            br
+            label Please enter your name: 
+                input(type='text', name='username')
+            br
+            label Please enter your password: 
+                input(type='password', name='userpassword')
+            br
+            button(type='submit') Submit
