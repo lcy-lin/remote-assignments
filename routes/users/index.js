@@ -26,6 +26,17 @@ function isValidDate(dateString) {
   return false;
 }
 
+router.get('/users', (req, res) => {
+  const sqlQuery = 'SELECT * FROM user';
+  connection.query(sqlQuery, (err, results) => {
+    if (err) {
+      handleDatabaseError(err, res, 'Error fetching users');
+      return;
+    }
+    res.render('signup');
+  });
+});
+
 // Middleware for checking if the user is connected to the database
 router.use((req, res, next) => {
   if (connection.state === 'disconnected') {
