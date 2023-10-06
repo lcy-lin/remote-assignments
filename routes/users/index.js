@@ -26,90 +26,77 @@ function isValidDate(dateString) {
   }
   return false;
 }
+
 function isHeaderValid(contentTypeHeader, requestDateHeader) {
-  if(contentTypeHeader !== 'application/json' || !requestDateHeader || !isValidDate(requestDateHeader)) {
+  if (contentTypeHeader !== 'application/json' || !requestDateHeader || !isValidDate(requestDateHeader)) {
     return false;
   }
   return true;
 }
-router.get('/users', (req, res) => {
-  pool.getConnection()
-    .then((connection) => {
-      return connection.query('SELECT * FROM user')
-        .then(([results]) => {
-          connection.release();
-          res.render('signup');
-        })
-        .catch((err) => {
-          connection.release();
-          handleDatabaseError(err, res, 'Error fetching users');
-        });
-    })
-    .catch((err) => {
-      handleDatabaseError(err, res, 'Error establishing database connection');
-    });
+
+router.get('/users', async (req, res) => {
+  try {
+    const connection = await pool.getConnection();
+    const [results] = await connection.query('SELECT * FROM user');
+    connection.release();
+    res.render('signup');
+  } catch (err) {
+    handleDatabaseError(err, res, 'Error fetching users');
+  }
 });
 
 // Middleware for checking if the user is connected to the database
-router.use((req, res, next) => {
-  pool.getConnection()
-    .then((connection) => {
-      connection.release();
-      next();
-    })
-    .catch((err) => {
-      console.error('Database connection is not established.');
-      res.status(500).json({ error: 'Database connection failed' });
-    });
+router.use(async (req, res, next) => {
+  try {
+    const connection = await pool.getConnection();
+    connection.release();
+    next();
+  } catch (err) {
+    console.error('Database connection is not established.');
+    res.status(500).json({ error: 'Database connection failed' });
+  }
 });
 
-router.get('/users/:id', (req, res) => {
+router.get('/users/:id', async (req, res) => {
   const userId = req.params.id;
   const contentTypeHeader = req.get('Content-Type');
   const requestDateHeader = req.get('Request-date');
 
-  if (isHeaderValid(contentTypeHeader, requestDateHeader) === false) {
+  if (!isHeaderValid(contentTypeHeader, requestDateHeader)) {
     return res.status(400).json({ error: 'Client Error Response' });
   }
 
-  pool.getConnection()
-    .then((connection) => {
-      return connection.query('SELECT * FROM user WHERE id = ?', [userId])
-        .then(([results]) => {
-          connection.release();
+  try {
+    const connection = await pool.getConnection();
+    const [results] = await connection.query('SELECT * FROM user WHERE id = ?', [userId]);
+    connection.release();
 
-          if (results.length === 0) {
-            return res.status(404).json({ error: 'User Not Existing' });
-          }
+    if (results.length === 0) {
+      return res.status(404).json({ error: 'User Not Existing' });
+    }
 
-          const userData = results[0];
-          const response = {
-            data: {
-              user: {
-                id: userData.id,
-                name: userData.name,
-                email: userData.email,
-              },
-              'request-date': requestDateHeader,
-            },
-          };
-          res.status(200).json(response);
-        })
-        .catch((err) => {
-          connection.release();
-          handleDatabaseError(err, res, 'Error fetching user by ID');
-        });
-    })
-    .catch((err) => {
-      handleDatabaseError(err, res, 'Error establishing database connection');
-    });
+    const userData = results[0];
+    const response = {
+      data: {
+        user: {
+          id: userData.id,
+          name: userData.name,
+          email: userData.email,
+        },
+        'request-date': requestDateHeader,
+      },
+    };
+    res.status(200).json(response);
+  } catch (err) {
+    handleDatabaseError(err, res, 'Error fetching user by ID');
+  }
 });
 
-router.post('/users', (req, res) => {
+router.post('/users', async (req, res) => {
   const contentTypeHeader = req.get('Content-Type');
   const requestDateHeader = req.get('Request-Date');
 
-  if (isHeaderValid(contentTypeHeader, requestDateHeader) === false) {
+  if (!isHeaderValid(contentTypeHeader, requestDateHeader)) {
     return res.status(400).json({ error: 'Client Error Response' });
   }
 
@@ -118,45 +105,39 @@ router.post('/users', (req, res) => {
   if (!emailRegex.test(useremail) || !nameRegex.test(username) || !passwordRegex.test(userpassword)) {
     return res.status(400).json({ error: 'Client Error Response' });
   }
+  if(!useremail || !username || !userpassword) {
+    return res.status(400).json({ error: 'Client Error Response' });
+  }
+  try {
+    const connection = await pool.getConnection();
+    const [checkEmailResults] = await connection.query('SELECT * FROM user WHERE email = ?', [useremail]);
 
-  pool.getConnection()
-    .then((connection) => {
-      return connection.query('SELECT * FROM user WHERE email = ?', [useremail])
-        .then(([checkEmailResults]) => {
-          if (checkEmailResults.length > 0) {
-            connection.release();
-            return res.status(409).json({ error: 'Email Already Exists' });
-          }
+    if (checkEmailResults.length > 0) {
+      connection.release();
+      return res.status(409).json({ error: 'Email Already Exists' });
+    }
 
-          const formattedDate = moment(requestDateHeader, 'ddd, DD MMM YYYY HH:mm:ss [GMT]').format('YYYY-MM-DD HH:mm:ss');
-          return connection.query('INSERT INTO user (email, name, password, created_at) VALUES (?, ?, ?, ?)', [useremail, username, userpassword, formattedDate])
-            .then(([insertResults]) => {
-              connection.release();
-              const response = {
-                data: {
-                  user: {
-                    id: insertResults.insertId,
-                    name: username,
-                    email: useremail,
-                  },
-                  'request-date': requestDateHeader,
-                },
-              };
-              res.status(200).json(response);
-            })
-            .catch((err) => {
-              connection.release();
-              handleDatabaseError(err, res, 'Error inserting user');
-            });
-        })
-        .catch((err) => {
-          connection.release();
-          handleDatabaseError(err, res, 'Error checking email');
-        });
-    })
-    .catch((err) => {
-      handleDatabaseError(err, res, 'Error establishing database connection');
-    });
+    const formattedDate = moment(requestDateHeader, 'ddd, DD MMM YYYY HH:mm:ss [GMT]').format('YYYY-MM-DD HH:mm:ss');
+    const [insertResults] = await connection.query(
+      'INSERT INTO user (email, name, password, created_at) VALUES (?, ?, ?, ?)',
+      [useremail, username, userpassword, formattedDate]
+    );
+
+    connection.release();
+    const response = {
+      data: {
+        user: {
+          id: insertResults.insertId,
+          name: username,
+          email: useremail,
+        },
+        'request-date': requestDateHeader,
+      },
+    };
+    res.status(200).json(response);
+  } catch (err) {
+    handleDatabaseError(err, res, 'Error inserting user');
+  }
 });
 
 module.exports = router;
