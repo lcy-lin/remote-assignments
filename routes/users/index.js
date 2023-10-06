@@ -122,7 +122,7 @@ router.post('/users', (req, res) => {
             name: username,
             email: useremail,
           },
-          'request-date': new Date().toUTCString(),
+          'request-date': requestDateHeader,
         },
       };
       res.status(200).json(response);
