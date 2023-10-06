@@ -6,6 +6,7 @@ require('dotenv').config();
 const app = express()
 const port = 3000
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.json());
 const routes = require('./routes/users');
 app.use(routes);
 app.set('view engine', 'pug');

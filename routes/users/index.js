@@ -84,10 +84,18 @@ router.get('/users/:id', (req, res) => {
 });
 
 router.post('/users', (req, res) => {
+  const contentTypeHeader = req.get('Content-Type');
+  const requestDateHeader = req.get('request-date');
+  if (contentTypeHeader !== 'application/json') {
+    return res.status(400).json({ error: 'Client Error Response' });
+  }
+  if (!requestDateHeader || !isValidDate(requestDateHeader)) {
+    return res.status(400).json({ error: 'Client Error Response'});
+  }
   const { useremail, username, userpassword } = req.body;
 
   if (!emailRegex.test(useremail) || !nameRegex.test(username) || !passwordRegex.test(userpassword)) {
-    return res.status(400).json({ error: 'Client Error Response' });
+    return res.status(400).json({ error: 'Client Error Response'});
   }
 
   const sqlCheckEmail = 'SELECT * FROM user WHERE email = ?';
