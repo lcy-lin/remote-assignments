@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const mysql = require('mysql2');
+const mysql2 = require('mysql2/promise');
 const moment = require('moment');
 require('dotenv').config();
 
@@ -58,7 +59,6 @@ router.get('/users/:id', (req, res) => {
   if (!requestDateHeader || !isValidDate(requestDateHeader)) {
     return res.status(400).json({ error: 'Client Error Response' });
   }
-
   const sqlCheckUser = 'SELECT * FROM user WHERE id = ?';
   connection.query(sqlCheckUser, [userId], (err, results) => {
     if (err) {
@@ -66,7 +66,7 @@ router.get('/users/:id', (req, res) => {
       return;
     }
     if (results.length === 0) {
-      return res.status(403).json({ error: 'User Not Existing' });
+      return res.status(404).json({ error: 'User Not Existing' });
     }
     let userData = results[0];
     const response = {
