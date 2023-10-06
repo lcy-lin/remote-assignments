@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const mysql2 = require('mysql2/promise');
 const moment = require('moment');
+const bcrypt = require('bcrypt');
 require('dotenv').config();
 
 const pool = mysql2.createPool({
@@ -116,11 +117,11 @@ router.post('/users', async (req, res) => {
       connection.release();
       return res.status(409).json({ error: 'Email Already Exists' });
     }
-
+    const hashedPassword = await bcrypt.hash(userpassword, 10);
     const formattedDate = moment(requestDateHeader, 'ddd, DD MMM YYYY HH:mm:ss [GMT]').format('YYYY-MM-DD HH:mm:ss');
     const [insertResults] = await connection.query(
       'INSERT INTO user (email, name, password, created_at) VALUES (?, ?, ?, ?)',
-      [useremail, username, userpassword, formattedDate]
+      [useremail, username, hashedPassword, formattedDate]
     );
 
     connection.release();
