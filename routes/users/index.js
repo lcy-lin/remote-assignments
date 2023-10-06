@@ -51,7 +51,7 @@ router.use((req, res, next) => {
 router.get('/users/:id', (req, res) => {
   const userId = req.params.id;
   const contentTypeHeader = req.get('Content-Type');
-  const requestDateHeader = req.get('request-date');
+  const requestDateHeader = req.get('Request-date');
   if (contentTypeHeader !== 'application/json') {
     return res.status(400).json({ error: 'Client Error Response' });
   }
@@ -85,7 +85,7 @@ router.get('/users/:id', (req, res) => {
 
 router.post('/users', (req, res) => {
   const contentTypeHeader = req.get('Content-Type');
-  const requestDateHeader = req.get('request-date');
+  const requestDateHeader = req.get('Request-Date');
   if (contentTypeHeader !== 'application/json') {
     return res.status(400).json({ error: 'Client Error Response' });
   }
