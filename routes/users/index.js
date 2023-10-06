@@ -73,7 +73,7 @@ router.get('/users/:id', async (req, res) => {
     connection.release();
 
     if (results.length === 0) {
-      return res.status(404).json({ error: 'User Not Existing' });
+      return res.status(403).json({ error: 'User Not Existing' });
     }
 
     const userData = results[0];
