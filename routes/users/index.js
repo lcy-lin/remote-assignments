@@ -108,9 +108,9 @@ router.post('/users', (req, res) => {
     if (results.length > 0) {
       return res.status(409).json({ error: 'Email Already Exists' });
     }
-
-    const sqlInsertUser = 'INSERT INTO user (email, name, password) VALUES (?, ?, ?)';
-    connection.query(sqlInsertUser, [useremail, username, userpassword], (err, insertResults) => {
+    const formattedDate = moment(requestDateHeader, 'ddd, DD MMM YYYY HH:mm:ss [GMT]').format('YYYY-MM-DD HH:mm:ss');
+    const sqlInsertUser = 'INSERT INTO user (email, name, password, created_at) VALUES (?, ?, ?, ?)';
+    connection.query(sqlInsertUser, [useremail, username, userpassword, formattedDate], (err, insertResults) => {
       if (err) {
         handleDatabaseError(err, res, 'Error inserting user');
         return;
