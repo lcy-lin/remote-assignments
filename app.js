@@ -12,6 +12,7 @@ app.use(express.json());
 app.use(cors());
 app.use(express.static('static'));
 app.use(routes);
+app.set('view engine', 'pug');
 
 app.get('/healthcheck', (req, res) => {
   res.send('OK');
