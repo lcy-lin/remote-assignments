@@ -14,7 +14,7 @@ signupForm.addEventListener("submit", (e) => {
   } else {
     const formData = new FormData(event.target);
   axios
-    .post(`http://3.24.150.175/users`, {
+    .post(`http://localhost:3000/users`, {
       username: formData.get('name'),
       useremail: formData.get('email'),
       userpassword: formData.get('password'),

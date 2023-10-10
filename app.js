@@ -1,5 +1,4 @@
 import express from 'express';
-import mysql from 'mysql';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import config from './src/config.js';
