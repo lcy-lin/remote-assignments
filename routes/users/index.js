@@ -103,7 +103,7 @@ router.post('/users', async (req, res) => {
     return res.status(400).json({ error: 'Invalid Inputs' });
   }
   if(!useremail || !username || !userpassword) {
-    return res.status(400).json({ error: 'Invalid Inputs' });
+    return res.status(400).json({ error: 'Inputs Cannot Be Empty' });
   }
   try {
     const connection = await pool.getConnection();
