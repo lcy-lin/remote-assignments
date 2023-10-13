@@ -2,8 +2,8 @@ import axios from 'https://cdn.jsdelivr.net/npm/axios@1.3.5/+esm';
 
 let signupForm = document.getElementById("signupForm");
 
-signupForm.addEventListener("submit", (e) => {
-  e.preventDefault();
+signupForm.addEventListener("submit", (event) => {
+  event.preventDefault();
 
   let name = document.getElementById("name");
   let email = document.getElementById("email");
