@@ -1,16 +1,19 @@
-const express = require('express')
-const mysql = require('mysql2');
-const bodyParser = require('body-parser');
-require('dotenv').config();
+import express from 'express';
+import bodyParser from 'body-parser';
+import cors from 'cors';
+import config from './src/config.js';
+import routes from './routes/users/index.js';
 
 const app = express()
 const port = 3000
+
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
-const routes = require('./routes/users');
+app.use(cors());
+// app.use(express.static('static'));
+app.use(express.static('my-react-app/build'));
 app.use(routes);
 app.set('view engine', 'pug');
-
 
 app.get('/healthcheck', (req, res) => {
   res.send('OK');

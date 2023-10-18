@@ -1,9 +1,7 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const mysql2 = require('mysql2/promise');
-const moment = require('moment');
-const bcrypt = require('bcrypt');
-require('dotenv').config();
+import mysql2 from 'mysql2/promise';
+import moment from 'moment';
 
 const pool = mysql2.createPool({
   host: process.env.DB_HOST,
@@ -38,8 +36,6 @@ function isHeaderValid(contentTypeHeader, requestDateHeader) {
 router.get('/users', async (req, res) => {
   try {
     const connection = await pool.getConnection();
-    const [results] = await connection.query('SELECT * FROM user');
-    connection.release();
     res.render('signup');
   } catch (err) {
     handleDatabaseError(err, res, 'Error fetching users');
@@ -102,12 +98,12 @@ router.post('/users', async (req, res) => {
   }
 
   const { useremail, username, userpassword } = req.body;
-
+  
   if (!emailRegex.test(useremail) || !nameRegex.test(username) || !passwordRegex.test(userpassword)) {
-    return res.status(400).json({ error: 'Client Error Response' });
+    return res.status(400).json({ error: 'Invalid Inputs' });
   }
   if(!useremail || !username || !userpassword) {
-    return res.status(400).json({ error: 'Client Error Response' });
+    return res.status(400).json({ error: 'Inputs Cannot Be Empty' });
   }
   try {
     const connection = await pool.getConnection();
@@ -117,11 +113,10 @@ router.post('/users', async (req, res) => {
       connection.release();
       return res.status(409).json({ error: 'Email Already Exists' });
     }
-    const hashedPassword = await bcrypt.hash(userpassword, 10);
     const formattedDate = moment(requestDateHeader, 'ddd, DD MMM YYYY HH:mm:ss [GMT]').format('YYYY-MM-DD HH:mm:ss');
     const [insertResults] = await connection.query(
       'INSERT INTO user (email, name, password, created_at) VALUES (?, ?, ?, ?)',
-      [useremail, username, hashedPassword, formattedDate]
+      [useremail, username, userpassword, formattedDate]
     );
 
     connection.release();
@@ -141,4 +136,4 @@ router.post('/users', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;
